@@ -73,7 +73,7 @@ async def search_accounts(
             keyword_str = keyword.strip()
 
         # 构建请求参数
-        list_params = {"page": 1, "page_size": 20, "num": 1}
+        list_params = {"page": 1, "page_size": 100, "num": 1}
 
         # 如果有皮肤关键词，用上游 API 原生过滤
         if keyword_str:
