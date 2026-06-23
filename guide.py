@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from typing import Optional
 import httpx
 import redis
+import os
 
 app = FastAPI(title="囤囤鼠导购助手")
 
@@ -22,7 +23,7 @@ DEFAULT_HEADERS = {
     "Content-Type": "application/json",
 }
 
-r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+r = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, db=0, decode_responses=True)
 LOCK_TTL = 15
 
 
