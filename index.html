@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 售前客服 Agent · 项目展示</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --bg-elevated:#131215;
+    --surface:#19181c;
+    --surface-2:#201f24;
+    --border:rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.14);
+    --text:#f3f1ec;
+    --text-muted:#96939c;
+    --text-faint:#5e5b63;
+    --amber:#ffb454;
+    --amber-soft:rgba(255,180,84,0.13);
+    --amber-dim:rgba(255,180,84,0.45);
+    --teal:#5eead4;
+    --teal-soft:rgba(94,234,212,0.12);
+    --rose:#ff8a8a;
+    --rose-soft:rgba(255,138,138,0.12);
+    --radius:18px;
+    --maxw:1120px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--amber-soft);color:var(--amber);}
+  a{color:inherit;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Fraunces',serif;}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important;}
+  }
+
+  /* ---- scroll progress ---- */
+  .progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--amber),var(--teal));width:0%;z-index:1000;transition:width 0.08s linear;}
+
+  /* ---- nav ---- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:900;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px clamp(20px,5vw,56px);
+    background:rgba(10,10,12,0.6);
+    backdrop-filter:blur(20px) saturate(140%);
+    -webkit-backdrop-filter:blur(20px) saturate(140%);
+    border-bottom:1px solid transparent;
+    transition:border-color .3s ease, background .3s ease;
+  }
+  nav.scrolled{border-bottom-color:var(--border);}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;letter-spacing:.2px;}
+  .brand-mark{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--amber-dim);}
+  .nav-links{display:flex;gap:28px;font-size:13px;color:var(--text-muted);}
+  .nav-links a{text-decoration:none;transition:color .2s;}
+  .nav-links a:hover{color:var(--text);}
+  .nav-cta{font-size:13px;border:1px solid var(--border-strong);padding:7px 16px;border-radius:99px;text-decoration:none;color:var(--text);transition:background .2s,border-color .2s;}
+  .nav-cta:hover{background:var(--surface-2);border-color:var(--amber-dim);}
+  @media (max-width:760px){.nav-links{display:none;}}
+
+  section{position:relative;padding:0 clamp(20px,6vw,56px);}
+  .wrap{max-width:var(--maxw);margin:0 auto;}
+
+  /* ---- hero ---- */
+  .hero{
+    min-height:100svh;display:flex;flex-direction:column;justify-content:center;
+    padding-top:80px;
+  }
+  .hero-bg{
+    position:absolute;top:0;left:0;right:0;bottom:0;z-index:-1;overflow:hidden;pointer-events:none;
+  }
+  .hero-bg .blob{
+    position:absolute;border-radius:50%;filter:blur(90px);opacity:.35;
+    animation:drift 22s ease-in-out infinite alternate;
+  }
+  .hero-bg .blob.b1{width:520px;height:520px;background:var(--amber);top:-160px;left:-120px;}
+  .hero-bg .blob.b2{width:420px;height:420px;background:var(--teal);bottom:-140px;right:-80px;animation-delay:-9s;}
+  .hero-bg .grain{position:absolute;top:0;left:0;right:0;bottom:0;background-image:radial-gradient(rgba(255,255,255,0.045) 1px, transparent 1px);background-size:26px 26px;}
+  @keyframes drift{0%{transform:translate(0,0) scale(1);}100%{transform:translate(40px,30px) scale(1.08);}}
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12.5px;letter-spacing:.06em;color:var(--amber);
+    border:1px solid rgba(255,180,84,0.3);background:var(--amber-soft);
+    padding:6px 14px;border-radius:99px;width:fit-content;margin-bottom:28px;
+  }
+  h1.hero-title{
+    font-size:clamp(46px,9vw,108px);
+    line-height:0.98;
+    margin:0 0 26px;
+    font-weight:600;
+    letter-spacing:-0.02em;
+  }
+  h1.hero-title em{font-style:italic;color:var(--amber);font-weight:500;}
+  .hero-sub{
+    font-size:clamp(16px,2vw,21px);
+    color:var(--text-muted);
+    max-width:600px;
+    line-height:1.65;
+    margin:0 0 36px;
+    font-weight:400;
+  }
+  .hero-cta-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:44px;}
+  .hero-cta{
+    display:inline-flex;align-items:center;gap:9px;
+    background:var(--amber);color:#181410;
+    font-weight:700;font-size:15px;
+    padding:14px 26px;border-radius:99px;
+    text-decoration:none;
+    transition:transform .2s ease, box-shadow .2s ease;
+    box-shadow:0 0 0 0 rgba(255,180,84,0.4);
+  }
+  .hero-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,180,84,0.28);}
+  .hero-cta .arrow{transition:transform .2s ease;}
+  .hero-cta:hover .arrow{transform:translateX(3px);}
+  .hero-cta-note{font-size:12.5px;color:var(--text-faint);}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:36px;margin-top:8px;}
+  .hero-meta div{display:flex;flex-direction:column;gap:4px;}
+  .hero-meta .num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--text);}
+  .hero-meta .lbl{font-size:12px;color:var(--text-faint);}
+  .scroll-cue{position:absolute;bottom:38px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text-faint);font-size:11px;letter-spacing:.08em;}
+  .scroll-cue .line{width:1px;height:34px;background:linear-gradient(var(--text-faint),transparent);animation:cuemove 1.8s ease-in-out infinite;}
+  @keyframes cuemove{0%{opacity:0;transform:translateY(-6px);}50%{opacity:1;}100%{opacity:0;transform:translateY(10px);}}
+
+  /* ---- reveal ---- */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+  .reveal.d1{transition-delay:.08s;}
+  .reveal.d2{transition-delay:.16s;}
+  .reveal.d3{transition-delay:.24s;}
+  .reveal.d4{transition-delay:.32s;}
+
+  /* ---- section heading pattern ---- */
+  .sec-head{margin-bottom:56px;max-width:680px;}
+  .sec-eyebrow{font-size:12.5px;letter-spacing:.08em;color:var(--text-faint);text-transform:uppercase;margin-bottom:14px;font-weight:600;}
+  .sec-title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(30px,4.2vw,48px);line-height:1.12;margin:0 0 16px;letter-spacing:-0.01em;}
+  .sec-desc{color:var(--text-muted);font-size:16.5px;line-height:1.7;}
+
+  section.block{padding-top:140px;padding-bottom:60px;}
+
+  /* ---- manifesto ---- */
+  .manifesto{
+    padding:160px clamp(20px,6vw,56px);
+    text-align:center;
+    background:radial-gradient(ellipse at 50% 0%, rgba(255,180,84,0.06), transparent 60%);
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+  }
+  .manifesto blockquote{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:clamp(28px,5.4vw,58px);
+    line-height:1.28;
+    max-width:920px;
+    margin:0 auto 28px;
+    letter-spacing:-0.01em;
+  }
+  .manifesto blockquote .accent{color:var(--amber);font-style:normal;}
+  .manifesto cite{font-style:normal;color:var(--text-faint);font-size:14px;letter-spacing:.04em;}
+
+  /* ---- routing diagram ---- */
+  .routing-stage{
+    background:var(--surface);border:1px solid var(--border);border-radius:24px;
+    padding:clamp(28px,5vw,56px);margin-top:40px;
+    overflow-x:auto;
+  }
+  .route-flow{display:flex;align-items:center;gap:0;min-width:680px;}
+  .route-node{
+    flex:0 0 auto;background:var(--bg-elevated);border:1px solid var(--border-strong);
+    border-radius:14px;padding:14px 18px;font-size:13px;font-weight:600;
+    display:flex;flex-direction:column;gap:4px;min-width:128px;
+    position:relative;
+  }
+  .route-node .tag{font-size:10px;color:var(--text-faint);font-weight:500;letter-spacing:.05em;font-family:'JetBrains Mono',monospace;}
+  .route-node.gateway{background:linear-gradient(160deg,var(--amber-soft),transparent);border-color:rgba(255,180,84,.35);}
+  .route-line{flex:1 1 auto;height:1px;background:repeating-linear-gradient(90deg,var(--border-strong) 0 6px, transparent 6px 12px);min-width:28px;position:relative;}
+  .route-branches{display:flex;flex-direction:column;gap:10px;}
+  .route-branch{
+    background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;
+    padding:9px 14px;font-size:12.5px;display:flex;align-items:center;gap:9px;white-space:nowrap;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;}
+  .dot.greet{background:#8b8f9b;} .dot.abuse{background:var(--rose);} .dot.end{background:#8b8f9b;}
+  .dot.shopping{background:var(--teal);} .dot.business{background:var(--amber);}
+  .pulse-ball{
+    position:absolute;top:50%;left:0;width:7px;height:7px;border-radius:50%;
+    background:var(--amber);transform:translateY(-50%);box-shadow:0 0 10px var(--amber);
+    animation:travel 3.4s ease-in-out infinite;opacity:0;
+  }
+  .routing-stage.animate .pulse-ball{animation-play-state:running;}
+  @keyframes travel{
+    0%{left:0%;opacity:0;}
+    6%{opacity:1;}
+    46%{left:100%;opacity:1;}
+    52%{opacity:0;}
+    100%{left:100%;opacity:0;}
+  }
+
+  .model-pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-muted);background:var(--bg-elevated);border:1px solid var(--border);padding:6px 13px;border-radius:99px;margin-top:18px;}
+  .model-pill .mono{color:var(--teal);}
+
+  /* ---- rewrite cards ---- */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px;}
+  @media (max-width:780px){.grid-2{grid-template-columns:1fr;}}
+  .rewrite-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px 28px;}
+  .rewrite-card .rule{font-size:11.5px;color:var(--text-faint);letter-spacing:.04em;margin-bottom:14px;font-weight:600;text-transform:uppercase;}
+  .rewrite-io{display:flex;flex-direction:column;gap:10px;}
+  .io-row{display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:13.5px;}
+  .io-tag{flex:0 0 auto;font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700;letter-spacing:.03em;}
+  .io-tag.in{background:rgba(255,255,255,.06);color:var(--text-muted);}
+  .io-tag.out{background:var(--amber-soft);color:var(--amber);}
+  .io-text{color:var(--text);}
+
+  /* ---- rag gauge ---- */
+  .rag-panel{display:grid;grid-template-columns:1.1fr 0.9fr;gap:40px;margin-top:40px;align-items:start;}
+  @media (max-width:860px){.rag-panel{grid-template-columns:1fr;}}
+  .gauge-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:30px 32px;}
+  .gauge-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-faint);margin-bottom:10px;font-family:'JetBrains Mono',monospace;}
+  .gauge-track{position:relative;height:10px;border-radius:99px;background:var(--bg-elevated);overflow:visible;border:1px solid var(--border);}
+  .gauge-fill{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,var(--rose),var(--amber));width:0%;transition:width 1.4s cubic-bezier(.2,.8,.2,1);}
+  .gauge-marker{position:absolute;top:-7px;width:2px;height:24px;background:var(--text);left:0%;}
+  .gauge-marker::after{content:'阈值 0.6';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text);white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+  .gauge-foot{display:flex;justify-content:space-between;margin-top:30px;font-size:12px;color:var(--text-faint);}
+  .stat-pair{display:flex;flex-direction:column;gap:24px;}
+  .stat-line{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--border);padding-bottom:18px;}
+  .stat-line .big{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:32px;color:var(--teal);}
+  .stat-line .desc{font-size:13.5px;color:var(--text-muted);line-height:1.5;}
+
+  /* ---- shopping ---- */
+  .shop-mock{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0;margin-top:40px;overflow:hidden;}
+  .shop-mock-head{display:flex;align-items:center;gap:8px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg-elevated);}
+  .shop-mock-head span{width:8px;height:8px;border-radius:50%;background:var(--border-strong);}
+  .shop-mock-head .url{margin-left:10px;font-size:11.5px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .shop-mock-head span{flex:0 0 auto;}
+  .shop-mock-body{padding:26px 28px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:780px){.shop-mock-body{grid-template-columns:1fr;}}
+  .shop-mock-foot{padding:0 28px 22px;font-size:11px;color:var(--text-faint);}
+  .shop-item{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:16px;}
+  .shop-item .price{font-family:'JetBrains Mono',monospace;color:var(--amber);font-weight:700;font-size:18px;margin-bottom:6px;}
+  .shop-item .name{font-size:13px;color:var(--text-muted);line-height:1.5;}
+  .shop-item .no{font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;margin-top:8px;}
+
+  /* ---- metrics ---- */
+  .metrics{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg-elevated);}
+  .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);}
+  @media (max-width:860px){.metrics-grid{grid-template-columns:repeat(2,1fr);}}
+  .metric-cell{padding:54px 28px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .metric-cell:nth-child(4n){border-right:none;}
+  @media (max-width:860px){.metric-cell:nth-child(2n){border-right:none;} .metric-cell:nth-child(4n){border-right:1px solid var(--border);}}
+  .metric-num{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:clamp(30px,4vw,44px);color:var(--text);}
+  .metric-num .unit{font-size:0.5em;color:var(--amber);margin-left:2px;}
+  .metric-lbl{font-size:12.5px;color:var(--text-faint);margin-top:10px;letter-spacing:.02em;}
+
+  /* ---- deploy ---- */
+  .deploy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px;}
+  @media (max-width:780px){.deploy-grid{grid-template-columns:1fr 1fr;}}
+  .deploy-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;}
+  .deploy-card .k{font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;font-weight:600;}
+  .deploy-card .v{font-family:'JetBrains Mono',monospace;font-size:14.5px;color:var(--text);}
+
+  /* ---- honor ---- */
+  .honor{
+    margin-top:140px;border-radius:28px;
+    background:linear-gradient(135deg, rgba(255,180,84,0.10), rgba(94,234,212,0.06));
+    border:1px solid rgba(255,180,84,0.22);
+    padding:clamp(36px,6vw,60px);
+    display:flex;align-items:center;gap:28px;justify-content:space-between;flex-wrap:wrap;
+  }
+  .honor-left{display:flex;align-items:center;gap:20px;}
+  .honor-badge{width:56px;height:56px;border-radius:16px;background:var(--amber);display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:24px;}
+  .honor h3{margin:0 0 6px;font-family:'Fraunces',serif;font-weight:600;font-size:22px;}
+  .honor p{margin:0;color:var(--text-muted);font-size:14px;}
+
+  /* ---- footer ---- */
+  footer{padding:120px clamp(20px,6vw,56px) 60px;text-align:center;}
+  footer .ft-title{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:clamp(26px,4vw,42px);margin-bottom:24px;}
+  .ft-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:60px;}
+  .ft-links a{text-decoration:none;border:1px solid var(--border-strong);padding:11px 22px;border-radius:99px;font-size:13.5px;transition:border-color .2s,background .2s;}
+  .ft-links a:hover{border-color:var(--amber-dim);background:var(--surface);}
+  .ft-meta{font-size:12px;color:var(--text-faint);}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<nav id="nav">
+  <div class="brand"><span class="brand-mark"></span>AI 售前客服 Agent</div>
+  <div class="nav-links">
+    <a href="#routing">路由网关</a>
+    <a href="#rewrite">查询改写</a>
+    <a href="#rag">RAG 检索</a>
+    <a href="#shopping">导购分支</a>
+    <a href="#cache">缓存层</a>
+    <a href="#metrics">工程指标</a>
+    <a href="#deploy">部署</a>
+  </div>
+  <a class="nav-cta" href="http://101.43.56.2:81/chat/w6VMmQ5tqSdoidaV" target="_blank" rel="noopener">立即体验 →</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"><div class="blob b1"></div><div class="blob b2"></div><div class="grain"></div></div>
+  <div class="wrap">
+    <div class="eyebrow">AI Agent 工程实践 · 售前智能客服系统</div>
+    <h1 class="hero-title display">把每一句<br><em>"老板"</em>的提问<br>都接住</h1>
+    <p class="hero-sub">此项目是一套服务于高频游戏账号租赁场景的售前智能客服系统。意图分流、检索增强、多轮改写、皮肤导购、Redis 缓存——把模糊的、省略的、带着情绪的真实对话，转化成精准、可控、可追责的回答。</p>
+    <div class="hero-cta-row">
+      <a class="hero-cta" href="http://101.43.56.2:81/chat/w6VMmQ5tqSdoidaV" target="_blank" rel="noopener">立即体验 Demo<span class="arrow">→</span></a>
+      <span class="hero-cta-note">真实部署在云端，支持实时对话</span>
+    </div>
+    <div class="hero-meta">
+      <div><span class="num mono">100%</span><span class="lbl">压测成功率</span></div>
+      <div><span class="num mono">2.5s</span><span class="lbl">平均响应耗时</span></div>
+      <div><span class="num mono">0.6</span><span class="lbl">RAG 命中阈值</span></div>
+      <div><span class="num mono">23</span><span class="lbl">条人工验证测试集</span></div>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>SCROLL</span><span class="line"></span></div>
+</section>
+
+<section class="manifesto reveal">
+  <blockquote>宁可漏答<span class="accent">转人工</span>，<br>不可<span class="accent">错答</span>。</blockquote>
+  <cite>—— 整套系统唯一不可妥协的设计红线</cite>
+</section>
+
+<section class="block" id="routing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Intent Routing</div>
+      <h2 class="sec-title">先分流，<br>再决定谁来回答</h2>
+      <p class="sec-desc">每一句用户输入先经过纯分类网关，不生成任何回复内容——只贴标签。五条路径分别对应打招呼、辱骂、道别、导购、业务咨询，避免让同一个 LLM 既当裁判又当选手。</p>
+    </div>
+    <div class="routing-stage reveal d1" id="routingStage">
+      <div class="route-flow">
+        <div class="route-node gateway">
+          <span class="tag">LLM · GATEWAY</span>
+          意图分流助手
+          <div class="pulse-ball" id="pulseBall"></div>
+        </div>
+        <div class="route-line"></div>
+        <div class="route-branches">
+          <div class="route-branch"><span class="dot greet"></span>GREETING — 打招呼</div>
+          <div class="route-branch"><span class="dot abuse"></span>ABUSE — 辱骂兜底</div>
+          <div class="route-branch"><span class="dot end"></span>END — 道别收束</div>
+          <div class="route-branch"><span class="dot shopping"></span>SHOPPING — 导购推荐</div>
+          <div class="route-branch"><span class="dot business"></span>BUSINESS — 业务问答</div>
+        </div>
+      </div>
+    </div>
+    <div class="model-pill reveal d2">分流模型 <span class="mono">deepseek-v4-flash</span> · 快、省 token，专职做选择题</div>
+  </div>
+</section>
+
+<section class="block" id="rewrite">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Query Rewriting</div>
+      <h2 class="sec-title">听懂"那XX呢"</h2>
+      <p class="sec-desc">真实对话里全是省略句和指代。LLM5 按优先级规则把这些口语补全成完整问题，再交给检索和生成环节，5 轮对话记忆，输出前统一清洗模型的思考标签。</p>
+    </div>
+    <div class="grid-2">
+      <div class="rewrite-card reveal d1">
+        <div class="rule">规则一 · 道具省略句补全</div>
+        <div class="rewrite-io">
+          <div class="io-row"><span class="io-tag in">IN</span><span class="io-text">那XX呢</span></div>
+          <div class="io-row"><span class="io-tag out">OUT</span><span class="io-text">XX多少钱</span></div>
+        </div>
+      </div>
+      <div class="rewrite-card reveal d2">
+        <div class="rule">规则二 · 降价诉求 ×0.75</div>
+        <div class="rewrite-io">
+          <div class="io-row"><span class="io-tag in">历史</span><span class="io-text">500以内有什么号</span></div>
+          <div class="io-row"><span class="io-tag in">IN</span><span class="io-text">再便宜点</span></div>
+          <div class="io-row"><span class="io-tag out">OUT</span><span class="io-text">375以内更便宜的号</span></div>
+        </div>
+      </div>
+      <div class="rewrite-card reveal d3">
+        <div class="rule">规则三 · 升级诉求 ×1.5 上限</div>
+        <div class="rewrite-io">
+          <div class="io-row"><span class="io-tag in">历史</span><span class="io-text">300以内有什么号</span></div>
+          <div class="io-row"><span class="io-tag in">IN</span><span class="io-text">有没有更贵的</span></div>
+          <div class="io-row"><span class="io-tag out">OUT</span><span class="io-text">300-450以内更好的号</span></div>
+        </div>
+      </div>
+      <div class="rewrite-card reveal d4">
+        <div class="rule">规则四 · 道别原样保留</div>
+        <div class="rewrite-io">
+          <div class="io-row"><span class="io-tag in">IN</span><span class="io-text">谢谢拜拜</span></div>
+          <div class="io-row"><span class="io-tag out">OUT</span><span class="io-text">谢谢拜拜（不改写）</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="rag">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Retrieval-Augmented Generation</div>
+      <h2 class="sec-title">检索的分寸感</h2>
+      <p class="sec-desc">知识库曾因 Q&A 分段重写丢失专有名词导致幻觉，后改为保留原文的纯分隔符分块，问题根治。叠加 qwen3-rerank 重排序，阈值卡在 0.6 ——低于这条线，宁可不答。</p>
+    </div>
+    <div class="rag-panel">
+      <div class="gauge-card reveal d1">
+        <div class="gauge-label"><span>SCORE THRESHOLD</span><span class="mono">0.60</span></div>
+        <div class="gauge-track">
+          <div class="gauge-fill" id="gaugeFill"></div>
+          <div class="gauge-marker" style="left:60%;"></div>
+        </div>
+        <div class="gauge-foot"><span>0.0 · 转人工</span><span>1.0 · 高置信命中</span></div>
+        <div class="stat-pair" style="margin-top:34px;">
+          <div class="stat-line"><span class="big">0.76–0.98</span><span class="desc">23 条人工验证问题中，核心业务命中分数区间</span></div>
+        </div>
+      </div>
+      <div class="stat-pair reveal d2">
+        <div class="stat-line"><span class="big">8/8</span><span class="desc">核心业务测试问题全部命中知识库，正确生成回答</span></div>
+        <div class="stat-line"><span class="big">5/5</span><span class="desc">知识库外类别全部被正确识别，主动转人工而非编造</span></div>
+        <div class="stat-line" style="border-bottom:none;"><span class="big">###</span><span class="desc">放弃 Q&amp;A 自动分段，改用原文分隔符切块，杜绝关键词丢失</span></div>
+      </div>
+    </div>
+    <div class="model-pill reveal d3">回答生成模型 <span class="mono">deepseek-v4-pro</span> + 重排序 <span class="mono">qwen3-rerank</span></div>
+  </div>
+</section>
+
+<section class="block" id="shopping">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Shopping Assistant</div>
+      <h2 class="sec-title">从“有没有XX价位的账号”<br>到“有没有XX道具的账号”</h2>
+      <p class="sec-desc">导购分支独立于知识库问答：参数提取 LLM 解析预算区间与皮肤关键词，FastAPI 网关调用上游 API 原生皮肤过滤 + 价格筛选，无匹配时返回友好提示而非转人工。</p>
+    </div>
+    <div class="shop-mock reveal d1">
+      <div class="shop-mock-head"><span></span><span></span><span></span><span class="url">GET /search_accounts?keyword=信条&amp;max_price=700</span></div>
+      <div class="shop-mock-body">
+        <div class="shop-item"><div class="price">¥696</div><div class="name">250M / 某游戏道具 / 某游戏道具 / 某游戏道具 / 某游戏道具</div><div class="no">ZWXXXX</div></div>
+        <div class="shop-item"><div class="price">¥542</div><div class="name">200M / 某游戏道具 / 某游戏道具</div><div class="no">ZWXXXX</div></div>
+        <div class="shop-item"><div class="price">¥699</div><div class="name">251M / 某游戏道具 / 某游戏道具 / 某游戏道具</div><div class="no">ZWXXXX</div></div>
+      </div>
+      <div class="shop-mock-foot">真实 API 返回数据，皮肤关键词由上游接口原生过滤</div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="cache">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Redis Cache &amp; Concurrency Control</div>
+      <h2 class="sec-title">不该重复的事，<br>一次都不多做</h2>
+      <p class="sec-desc">缓存代理拦截重复问答，互斥锁拦截重复请求。两层机制共同节省 token 开销、保护上游接口，并缩短高频问题的响应时间。</p>
+    </div>
+    <div class="grid-2">
+      <div class="rewrite-card reveal d1">
+        <div class="rule">缓存代理 · cache_proxy.py</div>
+        <div class="rewrite-io">
+          <div class="io-row"><span class="io-tag in">Q</span><span class="io-text">XX账号多少钱/这个账号多少钱</span></div>
+          <div class="io-row"><span class="io-tag out">1st</span><span class="io-text">→ Dify LLM · 存入 Redis</span></div>
+          <div class="io-row"><span class="io-tag out" style="background:var(--teal-soft);color:var(--teal);">2nd</span><span class="io-text">→ Redis 秒回 · 跳过 LLM</span></div>
+        </div>
+      </div>
+      <div class="rewrite-card reveal d2">
+        <div class="rule">互斥锁 · 防手抖重复提交</div>
+        <div class="rewrite-io">
+          <div class="io-row"><span class="io-tag in">Req 1</span><span class="io-text">加锁 → 正常处理</span></div>
+          <div class="io-row"><span class="io-tag in">Req 2</span><span class="io-text">检测到锁 → 直接拒绝</span></div>
+          <div class="io-row"><span class="io-tag out">效果</span><span class="io-text">同一问题不重复调用 LLM</span></div>
+        </div>
+      </div>
+      <div class="rewrite-card reveal d3">
+        <div class="rule">缓存策略 · 智能过滤</div>
+        <div class="rewrite-io">
+          <div class="io-row"><span class="io-tag out">TTL</span><span class="io-text">1 小时自动过期</span></div>
+          <div class="io-row"><span class="io-tag in">排除</span><span class="io-text">转人工回答不缓存</span></div>
+          <div class="io-row"><span class="io-tag out">清除</span><span class="io-text">知识库更新后一键清缓存</span></div>
+        </div>
+      </div>
+      <div class="rewrite-card reveal d4">
+        <div class="rule">管理接口 · 运维可控</div>
+        <div class="rewrite-io">
+          <div class="io-row"><span class="io-tag out">GET</span><span class="io-text">/cache/stats → 查看缓存条数</span></div>
+          <div class="io-row"><span class="io-tag in" style="background:var(--rose-soft);color:var(--rose);">DEL</span><span class="io-text">/cache/clear → 清空全部缓存</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="model-pill reveal d3">缓存层 <span class="mono">Redis 8.0</span> · 代理端口 <span class="mono">:8005</span> · 导购锁 <span class="mono">:8002</span></div>
+  </div>
+</section>
+
+<section class="metrics" id="metrics">
+  <div class="wrap" style="padding:0;">
+    <div class="metrics-grid">
+      <div class="metric-cell reveal"><div class="metric-num mono">100<span class="unit">%</span></div><div class="metric-lbl">压测成功率，指数退避重试</div></div>
+      <div class="metric-cell reveal d1"><div class="metric-num mono">2.5<span class="unit">s</span></div><div class="metric-lbl">平均响应耗时</div></div>
+      <div class="metric-cell reveal d2"><div class="metric-num mono">5<span class="unit">轮</span></div><div class="metric-lbl">多轮对话记忆窗口</div></div>
+      <div class="metric-cell reveal d3"><div class="metric-num mono">2<span class="unit">类</span></div><div class="metric-lbl">deepseek-v4 flash / pro 分级调用</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="deploy">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Deployment</div>
+      <h2 class="sec-title">真实跑在云端</h2>
+      <p class="sec-desc">不是只在本地跑通的 Demo——服务部署在腾讯云，Redis 缓存层加速响应，经过压力测试和重试机制加固。</p>
+    </div>
+    <div class="deploy-grid">
+      <div class="deploy-card reveal d1"><div class="k">服务器</div><div class="v">腾讯云 Ubuntu 22.04 · 4核4G</div></div>
+      <div class="deploy-card reveal d2"><div class="k">网络层</div><div class="v">Nginx 反向代理 + 入口页</div></div>
+      <div class="deploy-card reveal d3"><div class="k">缓存层</div><div class="v">Redis 8.0 · 缓存代理 + 互斥锁</div></div>
+      <div class="deploy-card reveal d1"><div class="k">容错</div><div class="v">指数退避重试，压测 100% 成功率</div></div>
+    </div>
+    <div class="honor reveal d4">
+      <div class="honor-left">
+        <div class="honor-badge">🏆</div>
+        <div><h3>入选小米 MiMo 创作者激励计划</h3><p>项目获得 Xiaomi MiMo 平台认可，纳入官方创作者激励名单。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="footer">
+  <div class="ft-title display">好的 AI Agent 系统，<br>应守住每一句"老板"的提问。</div>
+  <div class="ft-links">
+    <a href="#routing">查看技术细节 ↑</a>
+    <a href="https://github.com/" target="_blank" rel="noopener">GitHub 仓库</a>
+  </div>
+  <div class="ft-meta">AI 售前客服 Agent · Built with Dify · 作品集展示页</div>
+</footer>
+
+<script>
+  // scroll progress
+  const progress = document.getElementById('progress');
+  function updateProgress(){
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progress.style.width = scrolled + '%';
+  }
+  document.addEventListener('scroll', updateProgress, {passive:true});
+  updateProgress();
+
+  // nav blur on scroll
+  const nav = document.getElementById('nav');
+  function navState(){ nav.classList.toggle('scrolled', window.scrollY > 8); }
+  document.addEventListener('scroll', navState, {passive:true});
+  navState();
+
+  // reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.15, rootMargin:'0px 0px -40px 0px'});
+  revealEls.forEach(el=>io.observe(el));
+
+  // routing stage trigger
+  const routingStage = document.getElementById('routingStage');
+  const io2 = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ routingStage.classList.add('animate'); }
+    });
+  }, {threshold:0.4});
+  io2.observe(routingStage);
+
+  // gauge fill trigger
+  const gaugeFill = document.getElementById('gaugeFill');
+  const io3 = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ gaugeFill.style.width = '60%'; io3.unobserve(e.target); }
+    });
+  }, {threshold:0.4});
+  io3.observe(gaugeFill);
+</script>
+</body>
+</html>
