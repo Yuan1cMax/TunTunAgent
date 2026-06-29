@@ -1,5 +1,5 @@
 """
-囤囤鼠导购助手（带互斥锁 + 皮肤关键词筛选版）
+商品导购助手（带互斥锁 + 关键词筛选版）
 端口: 8002
 """
 
@@ -10,15 +10,16 @@ import httpx
 import redis
 import os
 
-app = FastAPI(title="囤囤鼠导购助手")
+app = FastAPI(title="商品导购助手")
 
-BASE_URL = "https://jyym.jiaoyiyou.com/zh/foreground"
+BASE_URL = os.getenv("GUIDE_BASE_URL", "https://example.com/zh/foreground")
 LIST_API_URL = f"{BASE_URL}/goods/listWithPage"
 REQUEST_TIMEOUT = 15.0
+REQUEST_ORIGIN = os.getenv("GUIDE_REQUEST_ORIGIN", "https://example.com")
 DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "Referer": "https://tuntuns.com/",
-    "Origin": "https://tuntuns.com",
+    "Referer": f"{REQUEST_ORIGIN}/",
+    "Origin": REQUEST_ORIGIN,
     "Accept": "application/json, text/plain, */*",
     "Content-Type": "application/json",
 }
@@ -125,7 +126,7 @@ async def search_accounts(
                     "skin": item.get("skin", ""),
                     "goods_no": item.get("goods_no"),
                     "created_at": item.get("created_at"),
-                    "url": f"https://tuntuns.com/#/goodsDetail?goodsNo={item.get('goods_no')}"
+                    "url": f"{REQUEST_ORIGIN}/#/goodsDetail?goodsNo={item.get('goods_no')}"
                 })
 
             recommendations.sort(key=lambda x: x["created_at"], reverse=True)

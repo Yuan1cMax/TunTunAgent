@@ -1,5 +1,5 @@
 """
-囤囤鼠 Redis 缓存代理
+Redis 缓存代理
 放在 Dify API 前面，缓存 RAG 问答结果，减少重复调用 LLM
 端口: 8005
 """
@@ -13,12 +13,12 @@ import json
 import time
 import os
 
-app = FastAPI(title="囤囤鼠缓存代理")
+app = FastAPI(title="Redis 缓存代理")
 
 # ==================== 配置 ====================
 
 DIFY_API_URL = os.getenv("DIFY_API_URL", "http://localhost:81/v1/chat-messages")
-DIFY_API_KEY = os.getenv("DIFY_API_KEY", "REMOVED_CREDENTIAL")
+DIFY_API_KEY = os.getenv("DIFY_API_KEY")
 
 r = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, db=0, decode_responses=True)
 
@@ -85,6 +85,12 @@ async def chat_proxy(request: Request):
     # ---- 第三步：加锁 → 调 Dify → 存缓存 → 释放锁 ----
     try:
         r.set(lock_key, "1", ex=LOCK_TTL)
+
+        if not DIFY_API_KEY:
+            return JSONResponse(
+                status_code=500,
+                content={"answer": "服务端未配置 DIFY_API_KEY，请先设置环境变量后再试。"}
+            )
 
         async with httpx.AsyncClient(timeout=60.0) as client:
             dify_response = await client.post(
