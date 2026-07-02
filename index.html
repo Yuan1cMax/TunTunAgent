@@ -317,16 +317,16 @@
   <div class="wrap">
     <div class="eyebrow">AI Agent 工程实践 · 某电商公司售前智能客服系统</div>
     <h1 class="hero-title display">把每一句<br><em>"老板"</em>的提问<br>都接住</h1>
-    <p class="hero-sub">此项目是一套服务于高频游戏账号租赁场景的售前智能客服系统。意图分流、检索增强、多轮改写、皮肤导购、Redis 缓存——把模糊的、省略的、带着情绪的真实对话，转化成精准、可控、可追责的回答。</p>
+    <p class="hero-sub">此项目是一套服务于高频游戏账号租赁场景的售前智能客服系统。它并不止于“让模型会聊天”，而是把意图分流、RAG 检索、商品导购、Redis 缓存和业务接口接入拆成独立层级，让 AI 能力真正贴近可部署、可验证、可优化的业务系统。</p>
     <div class="hero-cta-row">
       <a class="hero-cta" href="http://101.43.56.2:81/chat/4LZDA1PmrUaC02ZV" target="_blank" rel="noopener">立即体验 Demo<span class="arrow">→</span></a>
       <span class="hero-cta-note">真实部署在云端，支持实时对话</span>
     </div>
     <div class="hero-meta">
-      <div><span class="num mono">100%</span><span class="lbl">压测成功率</span></div>
-      <div><span class="num mono">2.5s</span><span class="lbl">平均响应耗时</span></div>
-      <div><span class="num mono">0.6</span><span class="lbl">RAG 命中阈值</span></div>
-      <div><span class="num mono">23</span><span class="lbl">条人工验证测试集</span></div>
+      <div><span class="num mono">100%</span><span class="lbl">FAQ 链路 10 并发成功率</span></div>
+      <div><span class="num mono">14.7s</span><span class="lbl">FAQ 链路平均耗时</span></div>
+      <div><span class="num mono">0.206s</span><span class="lbl">导购接口 50 并发平均耗时</span></div>
+      <div><span class="num mono">95%</span><span class="lbl">FAQ 链路 20 并发成功率</span></div>
     </div>
   </div>
   <div class="scroll-cue"><span>SCROLL</span><span class="line"></span></div>
@@ -460,15 +460,15 @@
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Redis Cache &amp; Concurrency Control</div>
       <h2 class="sec-title">不该重复的事，<br>一次都不多做</h2>
-      <p class="sec-desc">缓存代理拦截重复问答，互斥锁拦截重复请求。两层机制共同节省 token 开销、保护上游接口，并缩短高频问题的响应时间。</p>
+      <p class="sec-desc">缓存代理承接重复问题，互斥锁拦截短时间重复提交。两层机制共同节省 token 开销、保护上游 Dify 工作流，也让真实业务接入时具备进一步做限流、日志和统一网关的空间。</p>
     </div>
     <div class="grid-2">
       <div class="rewrite-card reveal d1">
         <div class="rule">缓存代理 · cache_proxy.py</div>
         <div class="rewrite-io">
-          <div class="io-row"><span class="io-tag in">Q</span><span class="io-text">XX账号多少钱/这个账号多少钱</span></div>
-          <div class="io-row"><span class="io-tag out">1st</span><span class="io-text">→ Dify LLM · 存入 Redis</span></div>
-          <div class="io-row"><span class="io-tag out" style="background:var(--teal-soft);color:var(--teal);">2nd</span><span class="io-text">→ Redis 秒回 · 跳过 LLM</span></div>
+          <div class="io-row"><span class="io-tag in">Q</span><span class="io-text">押金怎么算的 / 这个问题再说一遍</span></div>
+          <div class="io-row"><span class="io-tag out">1st</span><span class="io-text">→ 回源 Dify · 写入 Redis</span></div>
+          <div class="io-row"><span class="io-tag out" style="background:var(--teal-soft);color:var(--teal);">2nd</span><span class="io-text">→ 命中 cache · 跳过上游模型</span></div>
         </div>
       </div>
       <div class="rewrite-card reveal d2">
@@ -476,15 +476,15 @@
         <div class="rewrite-io">
           <div class="io-row"><span class="io-tag in">Req 1</span><span class="io-text">加锁 → 正常处理</span></div>
           <div class="io-row"><span class="io-tag in">Req 2</span><span class="io-text">检测到锁 → 直接拒绝</span></div>
-          <div class="io-row"><span class="io-tag out">效果</span><span class="io-text">同一问题不重复调用 LLM</span></div>
+          <div class="io-row"><span class="io-tag out">效果</span><span class="io-text">同一问题不重复打穿工作流链路</span></div>
         </div>
       </div>
       <div class="rewrite-card reveal d3">
         <div class="rule">缓存策略 · 智能过滤</div>
         <div class="rewrite-io">
           <div class="io-row"><span class="io-tag out">TTL</span><span class="io-text">1 小时自动过期</span></div>
-          <div class="io-row"><span class="io-tag in">排除</span><span class="io-text">转人工回答不缓存</span></div>
-          <div class="io-row"><span class="io-tag out">清除</span><span class="io-text">知识库更新后一键清缓存</span></div>
+          <div class="io-row"><span class="io-tag in">排除</span><span class="io-text">转人工类回答不缓存</span></div>
+          <div class="io-row"><span class="io-tag out">验证</span><span class="io-text">重复问题已实测返回 source=cache</span></div>
         </div>
       </div>
       <div class="rewrite-card reveal d4">
@@ -495,17 +495,17 @@
         </div>
       </div>
     </div>
-    <div class="model-pill reveal d3">缓存层 <span class="mono">Redis 8.0</span> · 代理端口 <span class="mono">:8005</span> · 导购锁 <span class="mono">:8002</span></div>
+    <div class="model-pill reveal d3">缓存层 <span class="mono">Redis 8.0</span> · 缓存代理 <span class="mono">cache_proxy.py</span> · 业务接入层 <span class="mono">FastAPI</span></div>
   </div>
 </section>
 
 <section class="metrics" id="metrics">
   <div class="wrap" style="padding:0;">
     <div class="metrics-grid">
-      <div class="metric-cell reveal"><div class="metric-num mono">100<span class="unit">%</span></div><div class="metric-lbl">压测成功率，指数退避重试</div></div>
-      <div class="metric-cell reveal d1"><div class="metric-num mono">2.5<span class="unit">s</span></div><div class="metric-lbl">平均响应耗时</div></div>
-      <div class="metric-cell reveal d2"><div class="metric-num mono">5<span class="unit">轮</span></div><div class="metric-lbl">多轮对话记忆窗口</div></div>
-      <div class="metric-cell reveal d3"><div class="metric-num mono">2<span class="unit">类</span></div><div class="metric-lbl">deepseek-v4 flash / pro 分级调用</div></div>
+      <div class="metric-cell reveal"><div class="metric-num mono">100<span class="unit">%</span></div><div class="metric-lbl">FAQ 链路 10 并发成功率</div></div>
+      <div class="metric-cell reveal d1"><div class="metric-num mono">14.7<span class="unit">s</span></div><div class="metric-lbl">FAQ 链路平均耗时</div></div>
+      <div class="metric-cell reveal d2"><div class="metric-num mono">22.3<span class="unit">s</span></div><div class="metric-lbl">导购链路平均耗时</div></div>
+      <div class="metric-cell reveal d3"><div class="metric-num mono">95<span class="unit">%</span></div><div class="metric-lbl">FAQ 链路 20 并发边界验证</div></div>
     </div>
   </div>
 </section>
@@ -515,13 +515,13 @@
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Deployment</div>
       <h2 class="sec-title">真实跑在云端</h2>
-      <p class="sec-desc">不是只在本地跑通的 Demo——服务部署在腾讯云，Redis 缓存层加速响应，经过压力测试和重试机制加固。</p>
+      <p class="sec-desc">不是只在本地跑通的 Demo。项目同时验证了展示链路、Dify API 链路和 Redis 缓存代理链路，并测出了 FAQ 链路的稳定基线、导购链路的复杂耗时以及轻量云服务器的并发边界。</p>
     </div>
     <div class="deploy-grid">
       <div class="deploy-card reveal d1"><div class="k">服务器</div><div class="v">腾讯云 Ubuntu 22.04 · 4核4G</div></div>
       <div class="deploy-card reveal d2"><div class="k">网络层</div><div class="v">Nginx 反向代理 + 入口页</div></div>
       <div class="deploy-card reveal d3"><div class="k">缓存层</div><div class="v">Redis 8.0 · 缓存代理 + 互斥锁</div></div>
-      <div class="deploy-card reveal d1"><div class="k">容错</div><div class="v">指数退避重试，压测 100% 成功率</div></div>
+      <div class="deploy-card reveal d1"><div class="k">接入方式</div><div class="v">业务系统调用 Workflow API / 代理接口</div></div>
     </div>
     <div class="honor reveal d4">
       <div class="honor-left">
