@@ -2,3 +2,20 @@ __pycache__/
 *.pyc
 benchmark-results/
 *.log
+
+# Local configuration / secrets
+.env
+.env.*
+
+# Local runtime data
+*.db
+*.sqlite
+*.sqlite3
+dump.rdb
+
+# Private local workflow export
+tuntunagent-dify-workflow.yml
+
+# OS/editor
+.DS_Store
+Thumbs.db

@@ -1,0 +1,12 @@
+.git
+__pycache__/
+*.pyc
+*.pyo
+*.log
+benchmark-results/
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+dump.rdb

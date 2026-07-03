@@ -1,0 +1,33 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: tuntun-redis
+    restart: unless-stopped
+
+  guide-api:
+    build: .
+    container_name: tuntun-guide-api
+    command: uvicorn guide:app --host 0.0.0.0 --port 8002
+    environment:
+      REDIS_HOST: redis
+      GUIDE_BASE_URL: ${GUIDE_BASE_URL:-https://example.com/zh/foreground}
+      GUIDE_REQUEST_ORIGIN: ${GUIDE_REQUEST_ORIGIN:-https://example.com}
+    ports:
+      - "8002:8002"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  cache-proxy:
+    build: .
+    container_name: tuntun-cache-proxy
+    command: uvicorn cache_proxy:app --host 0.0.0.0 --port 8005
+    environment:
+      REDIS_HOST: redis
+      DIFY_API_URL: ${DIFY_API_URL:-http://host.docker.internal:81/v1/chat-messages}
+      DIFY_API_KEY: ${DIFY_API_KEY:-}
+    ports:
+      - "8005:8005"
+    depends_on:
+      - redis
+    restart: unless-stopped

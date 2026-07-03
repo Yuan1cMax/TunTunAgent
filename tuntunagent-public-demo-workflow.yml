@@ -1,0 +1,106 @@
+app:
+  description: Public portfolio version with sanitized prompts, routes and product-specific details removed.
+  icon: "🤖"
+  icon_background: "#FFEAD5"
+  icon_type: emoji
+  mode: advanced-chat
+  name: TunTunAgent Public Demo Workflow
+  use_icon_as_answer_icon: false
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    opening_statement: 您好，这里是售前智能客服。您可以咨询预算、商品条件、订单问题和常见业务规则。
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions:
+      - 500 以内有什么推荐
+      - 常见规则怎么计算
+      - 我想查一下订单
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    description: |
+      Public demo summary:
+      1. Query rewriting for elliptical user input
+      2. Intent routing into greeting / abuse / end / shopping / FAQ branches
+      3. RAG retrieval for business FAQ
+      4. Structured parameter extraction for product filtering
+      5. HTTP request to shopping guide API
+      6. Cache proxy and mutex strategy implemented in backend layer
+    nodes:
+      - id: start
+        data:
+          title: 开始
+          type: start
+      - id: rewrite
+        data:
+          title: 对话补全
+          type: llm
+          desc: 结合最近对话历史，把省略句和指代补全成完整查询。
+      - id: router
+        data:
+          title: 意图分流
+          type: llm
+          desc: 将输入分到问答、导购、订单、售后、兜底等不同分支。
+      - id: retriever
+        data:
+          title: FAQ 知识检索
+          type: knowledge-retrieval
+          desc: 召回通用业务问答资料，并交给回答模型重组。
+      - id: shopping_params
+        data:
+          title: 导购参数提取
+          type: llm
+          desc: 抽取预算范围、关键词和筛选条件，输出结构化字段。
+      - id: shopping_http
+        data:
+          title: 导购 HTTP 调用
+          type: http-request
+          url: http://<internal-guide-host>:8002/search_accounts
+          authorization:
+            type: no-auth
+          desc: 调用导购接口，根据结构化参数筛选商品列表。
+      - id: faq_answer
+        data:
+          title: FAQ 回复生成
+          type: llm
+          desc: 结合检索结果生成业务问答回复，低置信时走兜底。
+      - id: shopping_answer
+        data:
+          title: 导购回复生成
+          type: llm
+          desc: 结合导购接口返回结果生成推荐或无匹配提示。
+      - id: answer
+        data:
+          title: 输出
+          type: answer
+    edges:
+      - source: start
+        target: rewrite
+      - source: rewrite
+        target: router
+      - source: router
+        target: retriever
+      - source: router
+        target: shopping_params
+      - source: retriever
+        target: faq_answer
+      - source: shopping_params
+        target: shopping_http
+      - source: shopping_http
+        target: shopping_answer
+      - source: faq_answer
+        target: answer
+      - source: shopping_answer
+        target: answer

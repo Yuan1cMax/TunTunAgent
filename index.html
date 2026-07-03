@@ -254,6 +254,34 @@
   .shop-item .name{font-size:13px;color:var(--text-muted);line-height:1.5;}
   .shop-item .no{font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;margin-top:8px;}
 
+  /* ---- code showcase ---- */
+  .code-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px;}
+  @media (max-width:900px){.code-grid{grid-template-columns:1fr;}}
+  .code-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+  }
+  .code-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 18px;border-bottom:1px solid var(--border);background:var(--bg-elevated);
+  }
+  .code-head strong{font-size:13px;font-weight:600;}
+  .code-head span{font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;}
+  .code-body{
+    margin:0;padding:18px 18px 20px;overflow:auto;
+    font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:var(--text);
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0));
+  }
+  .code-body code{white-space:pre;display:block;min-width:520px;}
+  .code-note{margin-top:20px;font-size:12px;color:var(--text-faint);}
+  .tok-k{color:var(--amber);}
+  .tok-f{color:var(--teal);}
+  .tok-s{color:#ffd89c;}
+  .tok-c{color:var(--text-faint);}
+  .tok-v{color:#c8c5ff;}
+
   /* ---- metrics ---- */
   .metrics{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg-elevated);}
   .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);}
@@ -309,7 +337,7 @@
     <a href="#metrics">工程指标</a>
     <a href="#deploy">部署</a>
   </div>
-  <a class="nav-cta" href="http://101.43.56.2:81/chat/4LZDA1PmrUaC02ZV" target="_blank" rel="noopener">立即体验 →</a>
+  <a class="nav-cta" href="http://101.43.56.2:81/chat/HulagGDGCn5Vlset" target="_blank" rel="noopener">立即体验 →</a>
 </nav>
 
 <section class="hero">
@@ -319,7 +347,7 @@
     <h1 class="hero-title display">把每一句<br><em>"老板"</em>的提问<br>都接住</h1>
     <p class="hero-sub">此项目是一套服务于高频游戏账号租赁场景的售前智能客服系统。它并不止于“让模型会聊天”，而是把意图分流、RAG 检索、商品导购、Redis 缓存和业务接口接入拆成独立层级，让 AI 能力真正贴近可部署、可验证、可优化的业务系统。</p>
     <div class="hero-cta-row">
-      <a class="hero-cta" href="http://101.43.56.2:81/chat/4LZDA1PmrUaC02ZV" target="_blank" rel="noopener">立即体验 Demo<span class="arrow">→</span></a>
+      <a class="hero-cta" href="http://101.43.56.2:81/chat/HulagGDGCn5Vlset" target="_blank" rel="noopener">立即体验 Demo<span class="arrow">→</span></a>
       <span class="hero-cta-note">真实部署在云端，支持实时对话</span>
     </div>
     <div class="hero-meta">
@@ -496,6 +524,80 @@
       </div>
     </div>
     <div class="model-pill reveal d3">缓存层 <span class="mono">Redis 8.0</span> · 缓存代理 <span class="mono">cache_proxy.py</span> · 业务接入层 <span class="mono">FastAPI</span></div>
+  </div>
+</section>
+
+<section class="block" id="code">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Code Snapshot</div>
+      <h2 class="sec-title">不是概念图，<br>是真代码</h2>
+      <p class="sec-desc">展示页只保留脱敏后的核心片段，用来说明项目并不是“流程图拼贴”。这里重点展示缓存命中、互斥锁保护、导购参数提取和压测统计四类工程能力。</p>
+    </div>
+    <div class="code-grid">
+      <div class="code-card reveal d1">
+        <div class="code-head"><strong>cache_proxy.py</strong><span>cache hit / lock guard</span></div>
+        <pre class="code-body"><code><span class="tok-k">def</span> <span class="tok-f">make_cache_key</span>(query: <span class="tok-v">str</span>) -> <span class="tok-v">str</span>:
+    query_hash = hashlib.md5(query.strip().lower().encode(<span class="tok-s">"utf-8"</span>)).hexdigest()
+    <span class="tok-k">return</span> <span class="tok-s">f"dify_cache:{query_hash}"</span>
+
+cached = redis_client.get(cache_key)
+<span class="tok-k">if</span> cached:
+    <span class="tok-k">return</span> {<span class="tok-s">"source"</span>: <span class="tok-s">"cache"</span>, <span class="tok-s">"answer"</span>: json.loads(cached)[<span class="tok-s">"answer"</span>]}
+
+<span class="tok-k">if</span> redis_client.exists(lock_key):
+    <span class="tok-k">return</span> {<span class="tok-s">"source"</span>: <span class="tok-s">"lock_wait"</span>, <span class="tok-s">"answer"</span>: <span class="tok-s">"您的问题正在处理中，请稍候..."</span>}</code></pre>
+      </div>
+      <div class="code-card reveal d2">
+        <div class="code-head"><strong>guide.py</strong><span>budget / keyword filtering</span></div>
+        <pre class="code-body"><code><span class="tok-k">if</span> keyword_str:
+    list_params[<span class="tok-s">"skin_list1"</span>] = [keyword_str]
+    list_params[<span class="tok-s">"skin_way1"</span>] = <span class="tok-v">2</span>
+
+<span class="tok-k">for</span> item <span class="tok-k">in</span> goods_list:
+    price_yuan = item.get(<span class="tok-s">"price"</span>, <span class="tok-v">0</span>) / <span class="tok-v">100.0</span>
+    <span class="tok-k">if</span> max_price_float <span class="tok-k">is not None</span> <span class="tok-k">and</span> price_yuan > max_price_float:
+        <span class="tok-k">continue</span>
+    <span class="tok-k">if</span> min_price_float <span class="tok-k">is not None</span> <span class="tok-k">and</span> price_yuan < min_price_float:
+        <span class="tok-k">continue</span>
+    recommendations.append({
+        <span class="tok-s">"title"</span>: item.get(<span class="tok-s">"title"</span>, <span class="tok-s">""</span>),
+        <span class="tok-s">"price_yuan"</span>: price_yuan
+    })</code></pre>
+      </div>
+      <div class="code-card reveal d3">
+        <div class="code-head"><strong>dify-workflow.yml</strong><span>parameter extraction</span></div>
+        <pre class="code-body"><code><span class="tok-c"># 提取导购参数节点</span>
+model:
+  name: deepseek-v4-flash
+  completion_params:
+    temperature: <span class="tok-v">0.2</span>
+
+structured_output:
+  max_price: <span class="tok-s">number | null</span>
+  min_price: <span class="tok-s">number | null</span>
+  keyword: <span class="tok-s">string | null</span>
+
+<span class="tok-c"># 后续 HTTP 节点读取结构化字段</span>
+params:
+  max_price: <span class="tok-s">{{max_price}}</span>
+  min_price: <span class="tok-s">{{min_price}}</span>
+  keyword: <span class="tok-s">{{keyword}}</span></code></pre>
+      </div>
+      <div class="code-card reveal d4">
+        <div class="code-head"><strong>benchmark.py</strong><span>real-chain measurement</span></div>
+        <pre class="code-body"><code>summary = {
+    <span class="tok-s">"success_rate"</span>: round(success / total * <span class="tok-v">100</span>, <span class="tok-v">2</span>),
+    <span class="tok-s">"avg_latency"</span>: round(statistics.mean(latencies), <span class="tok-v">3</span>),
+    <span class="tok-s">"p95_latency"</span>: round(percentile(latencies, <span class="tok-v">0.95</span>), <span class="tok-v">3</span>),
+    <span class="tok-s">"p99_latency"</span>: round(percentile(latencies, <span class="tok-v">0.99</span>), <span class="tok-v">3</span>),
+    <span class="tok-s">"status_codes"</span>: dict(Counter(status_codes)),
+}
+
+<span class="tok-k">print</span>(json.dumps(summary, ensure_ascii=<span class="tok-k">False</span>, indent=<span class="tok-v">2</span>))</code></pre>
+      </div>
+    </div>
+    <div class="code-note reveal d4">所有代码片段均为脱敏后的公开展示版本，不包含真实域名、真实密钥或内部业务字段。</div>
   </div>
 </section>
 
