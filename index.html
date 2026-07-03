@@ -270,11 +270,17 @@
   .code-head strong{font-size:13px;font-weight:600;}
   .code-head span{font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;}
   .code-body{
-    margin:0;padding:18px 18px 20px;overflow:auto;
+    margin:0;padding:18px 18px 20px;overflow:hidden;
     font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:var(--text);
     background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0));
   }
-  .code-body code{white-space:pre;display:block;min-width:520px;}
+  .code-body code{
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    display:block;
+    min-width:0;
+  }
   .code-note{margin-top:20px;font-size:12px;color:var(--text-faint);}
   .tok-k{color:var(--amber);}
   .tok-f{color:var(--teal);}
@@ -327,13 +333,14 @@
 <div class="progress" id="progress"></div>
 
 <nav id="nav">
-  <div class="brand"><span class="brand-mark"></span>某电商公司 AI 智能客服</div>
+  <div class="brand"><span class="brand-mark"></span>TunTunAgent · AI 售前系统</div>
   <div class="nav-links">
     <a href="#routing">路由网关</a>
     <a href="#rewrite">查询改写</a>
     <a href="#rag">RAG 检索</a>
     <a href="#shopping">导购分支</a>
     <a href="#cache">缓存层</a>
+    <a href="#code">代码浏览</a>
     <a href="#metrics">工程指标</a>
     <a href="#deploy">部署</a>
   </div>
@@ -343,12 +350,12 @@
 <section class="hero">
   <div class="hero-bg"><div class="blob b1"></div><div class="blob b2"></div><div class="grain"></div></div>
   <div class="wrap">
-    <div class="eyebrow">AI Agent 工程实践 · 某电商公司售前智能客服系统</div>
-    <h1 class="hero-title display">把每一句<br><em>"老板"</em>的提问<br>都接住</h1>
-    <p class="hero-sub">此项目是一套服务于高频游戏账号租赁场景的售前智能客服系统。它并不止于“让模型会聊天”，而是把意图分流、RAG 检索、商品导购、Redis 缓存和业务接口接入拆成独立层级，让 AI 能力真正贴近可部署、可验证、可优化的业务系统。</p>
+    <div class="eyebrow">AI Agent 工程实践 · TunTunAgent</div>
+    <h1 class="hero-title display">面向高频咨询场景的<br><em>AI 售前系统工程化展示</em></h1>
+    <p class="hero-sub">TunTunAgent 由 Dify 工作流、FastAPI 接入层、Redis 缓存保护和压测验证组成，覆盖意图分流、知识检索、导购筛选、缓存代理和公网部署等完整链路。</p>
     <div class="hero-cta-row">
-      <a class="hero-cta" href="http://101.43.56.2:81/chat/HulagGDGCn5Vlset" target="_blank" rel="noopener">立即体验 Demo<span class="arrow">→</span></a>
-      <span class="hero-cta-note">真实部署在云端，支持实时对话</span>
+      <a class="hero-cta" href="http://101.43.56.2:81/chat/HulagGDGCn5Vlset" target="_blank" rel="noopener">立即体验<span class="arrow">→</span></a>
+      <span class="hero-cta-note">公网可访问，支持实时对话</span>
     </div>
     <div class="hero-meta">
       <div><span class="num mono">100%</span><span class="lbl">FAQ 链路 10 并发成功率</span></div>
@@ -361,8 +368,8 @@
 </section>
 
 <section class="manifesto reveal">
-  <blockquote>宁可漏答<span class="accent">转人工</span>，<br>不可<span class="accent">错答</span>。</blockquote>
-  <cite>—— 整套系统唯一不可妥协的设计红线</cite>
+  <blockquote>宁可触发<span class="accent">兜底</span>，<br>也不编造<span class="accent">业务答案</span>。</blockquote>
+  <cite>—— 这套系统在准确性上的核心取舍</cite>
 </section>
 
 <section class="block" id="routing">
@@ -370,7 +377,7 @@
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Intent Routing</div>
       <h2 class="sec-title">先分流，<br>再决定谁来回答</h2>
-      <p class="sec-desc">每一句用户输入先经过纯分类网关，不生成任何回复内容——只贴标签。五条路径分别对应打招呼、辱骂、道别、导购、业务咨询，避免让同一个 LLM 既当裁判又当选手。</p>
+      <p class="sec-desc">用户输入先经过纯分类网关，不直接生成回复，而是分流到问答、导购、订单和兜底分支，避免一个模型同时承担分类和回答。</p>
     </div>
     <div class="routing-stage reveal d1" id="routingStage">
       <div class="route-flow">
@@ -398,7 +405,7 @@
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Query Rewriting</div>
       <h2 class="sec-title">听懂"那XX呢"</h2>
-      <p class="sec-desc">真实对话里全是省略句和指代。LLM5 按优先级规则把这些口语补全成完整问题，再交给检索和生成环节，5 轮对话记忆，输出前统一清洗模型的思考标签。</p>
+      <p class="sec-desc">这一层处理真实对话里的省略句、代称和预算变化。补全之后再进入检索和导购分支，提升后续参数提取和回答稳定性。</p>
     </div>
     <div class="grid-2">
       <div class="rewrite-card reveal d1">
@@ -440,7 +447,7 @@
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Retrieval-Augmented Generation</div>
       <h2 class="sec-title">检索的分寸感</h2>
-      <p class="sec-desc">知识库曾因 Q&A 分段重写丢失专有名词导致幻觉，后改为保留原文的纯分隔符分块，问题根治。叠加 qwen3-rerank 重排序，阈值卡在 0.6 ——低于这条线，宁可不答。</p>
+      <p class="sec-desc">知识库分段方式会直接影响召回质量，因此最终保留原文结构切块，再叠加重排序和阈值兜底，优先保证答复可信度。</p>
     </div>
     <div class="rag-panel">
       <div class="gauge-card reveal d1">
@@ -469,7 +476,7 @@
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Shopping Assistant</div>
       <h2 class="sec-title">从“有没有XX价位的账号”<br>到“有没有XX道具的账号”</h2>
-      <p class="sec-desc">导购分支独立于知识库问答：参数提取 LLM 解析预算区间与皮肤关键词，FastAPI 网关调用上游 API 原生皮肤过滤 + 价格筛选，无匹配时返回友好提示而非转人工。</p>
+      <p class="sec-desc">导购链路和知识问答拆开处理，让“该查数据的问题”走确定性接口，重点覆盖参数提取、HTTP 调用和结果整形。</p>
     </div>
     <div class="shop-mock reveal d1">
       <div class="shop-mock-head"><span></span><span></span><span></span><span class="url">GET /search_accounts?keyword=信条&amp;max_price=700</span></div>
@@ -488,7 +495,7 @@
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Redis Cache &amp; Concurrency Control</div>
       <h2 class="sec-title">不该重复的事，<br>一次都不多做</h2>
-      <p class="sec-desc">缓存代理承接重复问题，互斥锁拦截短时间重复提交。两层机制共同节省 token 开销、保护上游 Dify 工作流，也让真实业务接入时具备进一步做限流、日志和统一网关的空间。</p>
+      <p class="sec-desc">重复问题直接命中缓存，短时间重复提交由互斥锁拦截，减少上游模型调用，并控制并发下的重复穿透。</p>
     </div>
     <div class="grid-2">
       <div class="rewrite-card reveal d1">
@@ -531,8 +538,8 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Code Snapshot</div>
-      <h2 class="sec-title">不是概念图，<br>是真代码</h2>
-      <p class="sec-desc">展示页只保留脱敏后的核心片段，用来说明项目并不是“流程图拼贴”。这里重点展示缓存命中、互斥锁保护、导购参数提取和压测统计四类工程能力。</p>
+      <h2 class="sec-title">代码片段</h2>
+      <p class="sec-desc">这里展示的是脱敏后的核心代码片段，覆盖缓存命中、互斥锁保护、导购参数提取和压测统计等关键实现。</p>
     </div>
     <div class="code-grid">
       <div class="code-card reveal d1">
@@ -617,7 +624,7 @@ params:
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Deployment</div>
       <h2 class="sec-title">真实跑在云端</h2>
-      <p class="sec-desc">不是只在本地跑通的 Demo。项目同时验证了展示链路、Dify API 链路和 Redis 缓存代理链路，并测出了 FAQ 链路的稳定基线、导购链路的复杂耗时以及轻量云服务器的并发边界。</p>
+      <p class="sec-desc">静态页面、Dify 对话链路、缓存代理和压测结果均已在云服务器上跑通，形成完整的公网访问链路。</p>
     </div>
     <div class="deploy-grid">
       <div class="deploy-card reveal d1"><div class="k">服务器</div><div class="v">腾讯云 Ubuntu 22.04 · 4核4G</div></div>
@@ -635,12 +642,12 @@ params:
 </section>
 
 <footer id="footer">
-  <div class="ft-title display">好的 AI Agent 系统，<br>应守住每一句"老板"的提问。</div>
+  <div class="ft-title display">TunTunAgent</div>
   <div class="ft-links">
     <a href="#routing">查看技术细节 ↑</a>
     <a href="https://github.com/Yuan1cMax/TunTunAgent" target="_blank" rel="noopener">GitHub 仓库</a>
   </div>
-  <div class="ft-meta">某电商公司 AI 智能客服 · Built with Dify · 作品集展示页</div>
+  <div class="ft-meta">AI 售前系统 · Built with Dify, FastAPI and Redis</div>
 </footer>
 
 <script>
