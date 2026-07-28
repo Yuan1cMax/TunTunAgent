@@ -205,7 +205,8 @@ async def chat_proxy(request: Request):
             )
 
         data = response.json()
-        answer = str(data.get("answer", "")).strip()
+        raw_answer = data.get("answer")
+        answer = raw_answer.strip() if isinstance(raw_answer, str) else ""
         if not answer:
             return JSONResponse(status_code=502, content={"answer": "上游服务未返回有效回答。"})
 

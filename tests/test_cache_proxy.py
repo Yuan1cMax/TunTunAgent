@@ -99,3 +99,18 @@ def test_cache_admin_requires_bearer_token(monkeypatch):
     assert stats.json()["cached_count"] == 1
     cleared = client.delete("/cache/clear", headers={"Authorization": "Bearer admin-token"})
     assert cleared.json()["message"] == "已清除 1 条缓存"
+
+
+def test_null_upstream_answer_is_not_reported_as_success(monkeypatch):
+    client, _ = _client(monkeypatch)
+
+    class NullAnswerAsyncClient(MockAsyncClient):
+        async def post(self, url, headers, json):
+            request = httpx.Request("POST", url)
+            return httpx.Response(200, request=request, json={"answer": None, "conversation_id": "conv-null"})
+
+    monkeypatch.setattr(cache_proxy.httpx, "AsyncClient", NullAnswerAsyncClient)
+    response = client.post("/chat", json={"query": "押金怎么算", "user": "u-null"})
+
+    assert response.status_code == 502
+    assert response.json()["answer"] == "上游服务未返回有效回答。"
