@@ -54,6 +54,7 @@ TunTunAgent 源于本人任职期间公司 CEO 提出的售前智能化需求，
 | `cache_proxy.py` | Redis 缓存代理，演示重复问题缓存与互斥锁保护 |
 | `benchmark.py` | 轻量压测脚本，用于验证导购接口和 Dify 链路表现 |
 | `docs/rag-retrieval-runbook.md` | FAQ 检索参数、索引重建、回归矩阵与回滚手册 |
+| `deploy/nginx-tuntunagent.conf` | 展示页与 `guide.py:8002` 导购接口的反向代理示例 |
 | `index.html` | 项目公开展示页 |
 | `Dockerfile` / `docker-compose.yml` | FastAPI + Redis 的容器化运行示例 |
 | `.python-version` / `.env.example` | 本地运行与环境变量示例 |
