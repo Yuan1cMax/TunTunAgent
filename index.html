@@ -233,7 +233,7 @@
   .gauge-track{position:relative;height:10px;border-radius:99px;background:var(--bg-elevated);overflow:visible;border:1px solid var(--border);}
   .gauge-fill{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,var(--rose),var(--amber));width:0%;transition:width 1.4s cubic-bezier(.2,.8,.2,1);}
   .gauge-marker{position:absolute;top:-7px;width:2px;height:24px;background:var(--text);left:0%;}
-  .gauge-marker::after{content:'阈值 0.6';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text);white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+  .gauge-marker::after{content:'Top K 5';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text);white-space:nowrap;font-family:'JetBrains Mono',monospace;}
   .gauge-foot{display:flex;justify-content:space-between;margin-top:30px;font-size:12px;color:var(--text-faint);}
   .stat-pair{display:flex;flex-direction:column;gap:24px;}
   .stat-line{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--border);padding-bottom:18px;}
@@ -448,27 +448,27 @@
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Retrieval-Augmented Generation</div>
       <h2 class="sec-title">检索的分寸感</h2>
-      <p class="sec-desc">知识库分段方式会直接影响召回质量，因此最终保留原文结构切块，再叠加重排序和阈值兜底，优先保证答复可信度。</p>
+      <p class="sec-desc">先保留原文问答结构切块，再为中文短 FAQ 建立 Jieba 关键词索引；对比语义、混合、全文和重排策略后，按当前知识规模选择更稳定的关键词召回。</p>
     </div>
     <div class="rag-panel">
       <div class="gauge-card reveal d1">
-        <div class="gauge-label"><span>SCORE THRESHOLD</span><span class="mono">0.60</span></div>
+        <div class="gauge-label"><span>RETRIEVAL TOP K</span><span class="mono">5</span></div>
         <div class="gauge-track">
           <div class="gauge-fill" id="gaugeFill"></div>
-          <div class="gauge-marker" style="left:60%;"></div>
+          <div class="gauge-marker" style="left:50%;"></div>
         </div>
-        <div class="gauge-foot"><span>0.0 · 转人工</span><span>1.0 · 高置信命中</span></div>
+        <div class="gauge-foot"><span>关键词抽取</span><span>无结果转人工</span></div>
         <div class="stat-pair" style="margin-top:34px;">
-          <div class="stat-line"><span class="big">0.76–0.98</span><span class="desc">23 条人工验证问题中，核心业务命中分数区间</span></div>
+          <div class="stat-line"><span class="big">38</span><span class="desc">已启用并完成索引的业务 FAQ 片段</span></div>
         </div>
       </div>
       <div class="stat-pair reveal d2">
-        <div class="stat-line"><span class="big">8/8</span><span class="desc">核心业务测试问题全部命中知识库，正确生成回答</span></div>
-        <div class="stat-line"><span class="big">5/5</span><span class="desc">知识库外类别全部被正确识别，主动转人工而非编造</span></div>
+        <div class="stat-line"><span class="big">5/5</span><span class="desc">当前线上代表场景回归通过，覆盖 FAQ、流程与问候分支</span></div>
+        <div class="stat-line"><span class="big">7</span><span class="desc">押金相关片段进入同一关键词映射，覆盖计算、退回与用途问法</span></div>
         <div class="stat-line" style="border-bottom:none;"><span class="big">###</span><span class="desc">放弃 Q&amp;A 自动分段，改用原文分隔符切块，杜绝关键词丢失</span></div>
       </div>
     </div>
-    <div class="model-pill reveal d3">回答生成模型 <span class="mono">deepseek-v4-pro</span> + 重排序 <span class="mono">qwen3-rerank</span></div>
+    <div class="model-pill reveal d3">回答生成模型 <span class="mono">deepseek-v4-pro</span> + 中文检索 <span class="mono">jieba keyword index</span></div>
   </div>
 </section>
 
@@ -692,7 +692,7 @@ params:
   const gaugeFill = document.getElementById('gaugeFill');
   const io3 = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{
-      if(e.isIntersecting){ gaugeFill.style.width = '60%'; io3.unobserve(e.target); }
+      if(e.isIntersecting){ gaugeFill.style.width = '50%'; io3.unobserve(e.target); }
     });
   }, {threshold:0.4});
   io3.observe(gaugeFill);
