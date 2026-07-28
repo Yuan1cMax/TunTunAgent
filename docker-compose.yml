@@ -26,6 +26,10 @@ services:
       REDIS_HOST: redis
       DIFY_API_URL: ${DIFY_API_URL:-http://host.docker.internal:81/v1/chat-messages}
       DIFY_API_KEY: ${DIFY_API_KEY:-}
+      CACHE_ADMIN_TOKEN: ${CACHE_ADMIN_TOKEN:-}
+      CACHE_TTL: ${CACHE_TTL:-3600}
+      LOCK_TTL: ${LOCK_TTL:-90}
+      LOCK_WAIT_SECONDS: ${LOCK_WAIT_SECONDS:-5}
     ports:
       - "8005:8005"
     depends_on:

@@ -13,6 +13,7 @@ Pass them via CLI arguments or environment variables when running locally.
 import argparse
 import asyncio
 import json
+import math
 import os
 import statistics
 import time
@@ -30,7 +31,7 @@ def percentile(values: list[float], ratio: float) -> float:
     if not values:
         return 0.0
     ordered = sorted(values)
-    index = max(0, min(len(ordered) - 1, int(len(ordered) * ratio) - 1))
+    index = max(0, min(len(ordered) - 1, math.ceil(len(ordered) * ratio) - 1))
     return ordered[index]
 
 

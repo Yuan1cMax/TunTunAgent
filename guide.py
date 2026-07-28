@@ -6,9 +6,11 @@
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 from typing import Optional
+import hashlib
 import httpx
 import redis
 import os
+import secrets
 
 app = FastAPI(title="商品导购助手")
 
@@ -29,8 +31,13 @@ LOCK_TTL = 15
 
 
 def make_lock_key(max_price, min_price, keyword):
-    raw = f"guide_lock:{min_price or 'none'}_{max_price or 'none'}_{keyword or 'none'}"
-    return raw
+    raw = f"{min_price or 'none'}|{max_price or 'none'}|{(keyword or 'none').strip().lower()}"
+    return f"guide_lock:{hashlib.sha256(raw.encode('utf-8')).hexdigest()}"
+
+
+def release_lock(lock_key: str, lock_token: str) -> None:
+    if r.get(lock_key) == lock_token:
+        r.delete(lock_key)
 
 
 @app.get("/search_accounts")
@@ -40,17 +47,16 @@ async def search_accounts(
     keyword: Optional[str] = Query(None, description="皮肤关键词，如：信条、暗星、龙牙"),
 ):
     lock_key = make_lock_key(max_price, min_price, keyword)
-
-    if r.exists(lock_key):
-        return JSONResponse(content={
+    lock_token = secrets.token_urlsafe(18)
+    lock_acquired = bool(r.set(lock_key, lock_token, nx=True, ex=LOCK_TTL))
+    if not lock_acquired:
+        return JSONResponse(status_code=202, content={
             "success": True,
-            "message": "正在查询中，请稍候...",
+            "message": "相同筛选条件正在查询中，请稍后重试。",
             "source": "lock_wait",
         })
 
     try:
-        r.set(lock_key, "1", ex=LOCK_TTL)
-
         # 解析价格
         if max_price in (None, "null", "", "undefined"):
             max_price_float = None
@@ -85,8 +91,11 @@ async def search_accounts(
             try:
                 list_resp = await client.post(LIST_API_URL, json=list_params)
                 list_data = list_resp.json()
-            except Exception as e:
-                return {"success": False, "error": f"获取商品列表失败: {str(e)}"}
+            except (httpx.HTTPError, ValueError):
+                return JSONResponse(
+                    status_code=502,
+                    content={"success": False, "error": "商品检索服务暂时不可用"},
+                )
 
             if list_data.get("code") != 0:
                 return {"success": False, "error": "商品列表接口返回错误"}
@@ -129,7 +138,7 @@ async def search_accounts(
                     "url": f"{REQUEST_ORIGIN}/#/goodsDetail?goodsNo={item.get('goods_no')}"
                 })
 
-            recommendations.sort(key=lambda x: x["created_at"], reverse=True)
+            recommendations.sort(key=lambda x: str(x["created_at"] or ""), reverse=True)
 
             if not recommendations:
                 price_hint = ""
@@ -154,7 +163,8 @@ async def search_accounts(
             }
 
     finally:
-        r.delete(lock_key)
+        if lock_acquired:
+            release_lock(lock_key, lock_token)
 
 
 if __name__ == "__main__":
